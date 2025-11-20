@@ -93,17 +93,35 @@ int main(void) {
        .width = 1,
        .height = 3}};
 
-  struct Drawable drawables[] = {make_player_drawable(players[0]),
-                                 make_player_drawable(players[1])};
+  struct Drawable drawables[] = {
+      make_player_drawable(players[0]),
+      make_player_drawable(players[1]),
+      {.x = 0, .x1 = 0, .y = 0, .y1 = 0},
+      {.x = g_WIDTH, .x1 = g_WIDTH, .y = 0, .y1 = 0}};
 
   int playerIndex = 0;
   //   disable_echo();
+  int drawablesLength = sizeof(drawables) / sizeof(drawables[0]);
   while (1) {
     printf("\e[1;1H\e[2J");
-    draw(drawables, 2);
+
+    if (playerIndex == 0) {
+      struct Drawable indicator1 = drawables[2];
+      indicator1.x1 = 0;
+      struct Drawable indicator2 = drawables[3];
+      indicator2.x1 = 0;
+    } else {
+      struct Drawable indicator1 = drawables[2];
+      indicator1.x1 = -1;
+      struct Drawable indicator2 = drawables[3];
+      indicator2.x1 = g_WIDTH;
+    }
+
+    draw(drawables, drawablesLength);
     if (input((&players[playerIndex])) == 1) {
       playerIndex = playerIndex == 0 ? 1 : 0;
     };
+
     update(drawables, players, 2);
   }
   return 0;
