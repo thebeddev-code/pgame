@@ -29,22 +29,22 @@ int ball_dir_y = 0;
 
 void move_cursor(int x, int y) { printf("\033[%d;%dH", y, x); }
 
-void draw_rectangle(int xStart, int yStart, int x1, int y1) {
-    for (int y = yStart; y < y1; ++y) {
-        for (int x = xStart; x < x1; ++x) {
+void draw_rectangle(int x_start, int y_start, int x1, int y1, char draw_char) {
+    for (int y = y_start; y < y1; ++y) {
+        for (int x = x_start; x < x1; ++x) {
             move_cursor(x + 1, y + 1);
-            putchar('#');
+            putchar(draw_char);
         }
     }
 }
 
 int draw() {
     // Draw player 1 paddle
-    draw_rectangle(player1_x, player1_y, player1_x + g_PLAYER_WIDTH, player1_y + g_PLAYER_HEIGHT);
+    draw_rectangle(player1_x, player1_y, player1_x + g_PLAYER_WIDTH, player1_y + g_PLAYER_HEIGHT, '|');
     // Draw player 2 paddle
-    draw_rectangle(player2_x, player2_y, player2_x + g_PLAYER_WIDTH, player2_y + g_PLAYER_HEIGHT);
+    draw_rectangle(player2_x, player2_y, player2_x + g_PLAYER_WIDTH, player2_y + g_PLAYER_HEIGHT, '|');
 
-    draw_rectangle(ball_x, ball_y, ball_x + 1, ball_y + 1);
+    draw_rectangle(ball_x, ball_y, ball_x + 1, ball_y + 1, '+');
 
     fflush(stdout);
     return 0;
