@@ -111,6 +111,7 @@ int capture_input() {
                     if (prevKey == 'a' || prevKey == 'z') {
                         done = 1;
                     }
+                    break;
                 case ' ':
                     done = 1;
                     break;
