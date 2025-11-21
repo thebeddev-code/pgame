@@ -1,3 +1,4 @@
 out
 *.out
 *.exe
+cp2clipboard.sh

@@ -63,6 +63,7 @@ int capture_input() {
 
     while (!done) {
         move_cursor(SCREEN_WIDTH, SCREEN_HEIGHT);
+        printf("moves:");
         printf("\033[J");
         int ch = getchar();
 
@@ -81,16 +82,21 @@ int capture_input() {
                     prevKey = 'z';
                     break;
                 case '\n':
-                case ' ':
-                    // End turn ONLY if last key was a move key
+                    // End turn ONLY if last key was a move key (from a specific player)
+                    // Since in case of player whose turn is next was pressing 'enter'
+                    // That would trigger move, even tho the active player has done no move
                     if (prevKey == 'a' || prevKey == 'z') {
                         done = 1;
                     }
+                case ' ':
+                    done = 1;
                     break;
                 default:
                     break;
             }
-        } else if (g_player_index == 1) {
+        }
+
+        if (g_player_index == 1) {
             switch (ch) {
                 case 'k':  // move up
                     if (g_player2_y > 0) {
@@ -105,10 +111,12 @@ int capture_input() {
                     prevKey = 'm';
                     break;
                 case '\n':
-                case ' ':
                     if (prevKey == 'k' || prevKey == 'm') {
                         done = 1;
                     }
+                    break;
+                case ' ':
+                    done = 1;
                     break;
                 default:
                     break;
