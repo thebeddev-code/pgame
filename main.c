@@ -1,128 +1,115 @@
 #include <math.h>
 #include <stdio.h>
+#include <unistd.h>
 
-// This removes any char logging to terminal
-// void disable_echo() {
-//   struct termios t;
-//   tcgetattr(STDIN_FILENO, &t);
-//   t.c_lflag &= ~ECHO;
-//   tcsetattr(STDIN_FILENO, TCSAFLUSH, &t);
-// }
-
-struct Vector2 {
-  int x;
-  int y;
-};
-
-struct Drawable {
-  int x;
-  int y;
-  int x1;
-  int y1;
-};
-
-struct Player {
-  struct Vector2 position;
-  int width;
-  int height;
-};
-
-struct Drawable make_player_drawable(struct Player player) {
-  struct Drawable d;
-  d.x = player.position.x;
-  d.x1 = player.position.x + player.width -
-         1; // subtract 1 because coordinates are inclusive
-  d.y = player.position.y;
-  d.y1 = player.position.y + player.height - 1; // subtract 1 for same reason
-  return d;
-}
-
+// Constants for screen size
 static const int g_WIDTH = 80;
 static const int g_HEIGHT = 25;
+static const int g_PLAYER_WIDTH = 1;
 static const int g_PLAYER_HEIGHT = 3;
-static const int g_PLAYER_WIDTH = 3;
+// Player 1 paddle position and size
+int player1_x = 0;
+int player1_y = 0;
+
+// Player 2 paddle position and size
+int player2_x = g_WIDTH - 1;
+int player2_y = 0;
+
+// Ball position
+int ball_x = g_WIDTH / 2;
+int ball_y = g_HEIGHT / 2;
+
+// Ball previous position (for clearing)
+int ball_prev_x = g_WIDTH / 2;
+int ball_prev_y = g_HEIGHT / 2;
+
+// Ball direction
+int ball_dir_x = 1;
+int ball_dir_y = 0;
+
+void make_player_drawable() {}
 
 void move_cursor(int x, int y) { printf("\033[%d;%dH", y, x); }
 
-int draw(struct Drawable drawables[], int count) {
-  for (int i = 0; i < count; i++) {
-    struct Drawable d = drawables[i];
-    for (int y = d.y; y <= d.y1; y++) {
-      for (int x = d.x; x <= d.x1; x++) {
-        move_cursor(x + 1, y + 1);
-        putchar('#');
-      }
+void draw_rectangle(int xStart, int yStart, int x1, int y1) {
+  for (int y = yStart; y < y1; ++y) {
+    for (int x = xStart; x < x1; ++x) {
+      move_cursor(x + 1, y + 1);
+      putchar('#');
     }
   }
+}
+
+int draw() {
+  // Draw player 1 paddle
+  draw_rectangle(player1_x, player1_y, player1_x + g_PLAYER_WIDTH,
+                 player1_y + g_PLAYER_HEIGHT);
+  // Draw player 2 paddle
+  draw_rectangle(player2_x, player2_y, player2_x + g_PLAYER_WIDTH,
+                 player2_y + g_PLAYER_HEIGHT);
+
+  draw_rectangle(ball_x, ball_y, ball_x + 1, ball_y + 1);
+
   fflush(stdout);
   return 0;
 }
 
-void update(struct Drawable drawables[], struct Player players[], int count) {
-  for (int i = 0; i < count; i++) {
-    drawables[i].x = players[i].position.x;
-    drawables[i].x1 = players[i].width + players[i].position.x - 1;
-    drawables[i].y = players[i].position.y;
-    drawables[i].y1 = players[i].height + players[i].position.y - 1;
+void update() {
+  ball_x += ball_dir_x;
+  ball_y += ball_dir_y;
+}
+
+int input(int playerIndex) {
+  int ch = getchar();
+  switch (ch) {
+  case 'a':
+    if (playerIndex == 0 && player1_y + 1 < g_HEIGHT)
+      player1_y += 1;
+    return 0;
+  case 'z':
+    if (playerIndex == 0 && player1_y - 1 >= 0)
+      player1_y -= 1;
+    return 0;
+  case 'k':
+    if (playerIndex == 1 && player2_y + 1 < g_HEIGHT)
+      player2_y += 1;
+    return 0;
+  case 'm':
+    if (playerIndex == 1 && player2_y - 1 >= 0)
+      player2_y -= 1;
+    return 0;
+  case ' ':
+    return 1; // skip turn
+  default:
+    return 0;
   }
 }
 
-int input(struct Player *player) {
-  char c = getchar();
-  switch (c) {
-  case 'a':
-    player->position.y += 1;
-    return 0;
-  case 'z':
-    player->position.y -= 1;
-    return 0;
-  case ' ': {
-    return 1;
-  }
-  }
+int game_loop() {
+  // [TODO]: remove later or make conditional
+  int FPS = (1000 / 60) * 1000;
+  while (1) {
+    int playerIndex = 0;
+    while (1) {
+      printf("\e[1;1H\e[2J");
+      draw();
+      // if (input(playerIndex)) {
+      // };
 
-  return 1;
+      update();
+      // [TODO]: remove later or make conditional
+      usleep(FPS);
+    }
+  }
 }
 
 int main(void) {
-  struct Player players[] = {
-      {.position = {.x = 0, .y = (int)floor(g_HEIGHT / 2)},
-       .width = 1,
-       .height = 3},
-      {.position = {.x = g_WIDTH, .y = (int)floor(g_HEIGHT / 2)},
-       .width = 1,
-       .height = 3}};
-
-  struct Drawable drawables[] = {
-      make_player_drawable(players[0]),
-      make_player_drawable(players[1]),
-      {.x = 0, .x1 = 0, .y = 0, .y1 = 0},
-      {.x = g_WIDTH, .x1 = g_WIDTH, .y = 0, .y1 = 0}};
-
-  int playerIndex = 0;
-  //   disable_echo();
-  int drawablesLength = sizeof(drawables) / sizeof(drawables[0]);
+  player1_y = (int)floor(g_HEIGHT / 2);
+  player2_y = (int)floor(g_HEIGHT / 2);
+  // Main game loop
   while (1) {
-    printf("\e[1;1H\e[2J");
-
-    if (playerIndex == 0) {
-      struct Drawable indicator1 = drawables[2];
-      indicator1.x1 = 0;
-      struct Drawable indicator2 = drawables[3];
-      indicator2.x1 = 0;
-    } else {
-      struct Drawable indicator1 = drawables[2];
-      indicator1.x1 = -1;
-      struct Drawable indicator2 = drawables[3];
-      indicator2.x1 = g_WIDTH;
-    }
-
-    draw(drawables, drawablesLength);
-    if (input((&players[playerIndex])) == 1) {
-      playerIndex = playerIndex == 0 ? 1 : 0;
-    };
-
-    update(drawables, players, 2);
+    game_loop();
+    break;
   }
   return 0;
 }
