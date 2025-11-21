@@ -3,16 +3,17 @@
 #include <unistd.h>
 
 // Constants for screen size
-static const int SCREEN_WIDTH = 80;
-static const int SCREEN_HEIGHT = 25;
+static const int BORDERS_OFFSET = 3;
+static const int SCREEN_WIDTH = 80 - 2;
+static const int SCREEN_HEIGHT = 25 - 2;
 static const int PLAYER_WIDTH = 1;
 static const int PLAYER_HEIGHT = 3;
 // Player 1 paddle position and size
-int g_player1_x = 0;
+int g_player1_x = BORDERS_OFFSET - 1;
 int g_player1_y = 0;
 
 // Player 2 paddle position and size
-int g_player2_x = SCREEN_WIDTH - 1;
+int g_player2_x = SCREEN_WIDTH - BORDERS_OFFSET;
 int g_player2_y = 0;
 
 // Ball position
@@ -52,6 +53,29 @@ int draw() {
     return 0;
 }
 
+void draw_ui(char border_draw_char) {
+    for (int y = 0; y < SCREEN_HEIGHT + BORDERS_OFFSET; ++y) {
+        for (int x = 0; x < SCREEN_WIDTH + BORDERS_OFFSET; ++x) {
+            // Draw the top edge
+            if (y == 0 && (x < SCREEN_WIDTH + BORDERS_OFFSET)) {
+                draw_rectangle(x, y, x + 1, y + 1, border_draw_char);
+            }
+            // Draw the left edge
+            if (x == 0 && (y < SCREEN_HEIGHT + BORDERS_OFFSET)) {
+                draw_rectangle(x, y, x + 1, y + 1, border_draw_char);
+            }
+            // Draw the bottom edge
+            if (y == SCREEN_HEIGHT + BORDERS_OFFSET - 1 && (x < SCREEN_WIDTH + BORDERS_OFFSET)) {
+                draw_rectangle(x, y, x + 1, y + 1, border_draw_char);
+            }
+            // Draw the right edge
+            if (x == SCREEN_WIDTH + BORDERS_OFFSET - 1 && (y < SCREEN_HEIGHT + BORDERS_OFFSET)) {
+                draw_rectangle(x, y, x + 1, y + 1, border_draw_char);
+            }
+        }
+    }
+}
+
 void update() {
     g_ball_x += g_ball_dir_x;
     g_ball_y += g_ball_dir_y;
@@ -62,8 +86,7 @@ int capture_input() {
     char prevKey = 0;
 
     while (!done) {
-        move_cursor(SCREEN_WIDTH, SCREEN_HEIGHT);
-        printf("moves:");
+        move_cursor(SCREEN_WIDTH + BORDERS_OFFSET + 1, SCREEN_HEIGHT + BORDERS_OFFSET);
         printf("\033[J");
         int ch = getchar();
 
@@ -138,6 +161,7 @@ int main(void) {
         while (1) {
             printf("\e[1;1H\e[2J");
             draw();
+            draw_ui('*');
             if (capture_input()) {
             };
 
