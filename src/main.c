@@ -3,29 +3,31 @@
 #include <unistd.h>
 
 // Constants for screen size
-static const int g_WIDTH = 80;
-static const int g_HEIGHT = 25;
-static const int g_PLAYER_WIDTH = 1;
-static const int g_PLAYER_HEIGHT = 3;
+static const int WIDTH = 80;
+static const int HEIGHT = 25;
+static const int PLAYER_WIDTH = 1;
+static const int PLAYER_HEIGHT = 3;
 // Player 1 paddle position and size
-int player1_x = 0;
-int player1_y = 0;
+int g_player1_x = 0;
+int g_player1_y = 0;
 
 // Player 2 paddle position and size
-int player2_x = g_WIDTH - 1;
-int player2_y = 0;
+int g_player2_x = WIDTH - 1;
+int g_player2_y = 0;
 
 // Ball position
-int ball_x = g_WIDTH / 2;
-int ball_y = g_HEIGHT / 2;
+int g_ball_x = WIDTH / 2;
+int g_ball_y = HEIGHT / 2;
 
 // Ball previous position (for clearing)
-int ball_prev_x = g_WIDTH / 2;
-int ball_prev_y = g_HEIGHT / 2;
+int g_ball_prev_x = WIDTH / 2;
+int g_ball_prev_y = HEIGHT / 2;
 
 // Ball direction
-int ball_dir_x = 1;
-int ball_dir_y = 0;
+int g_ball_dir_x = 1;
+int g_ball_dir_y = 0;
+
+int g_player_index = 0;
 
 void move_cursor(int x, int y) { printf("\033[%d;%dH", y, x); }
 
@@ -40,35 +42,35 @@ void draw_rectangle(int x_start, int y_start, int x1, int y1, char draw_char) {
 
 int draw() {
     // Draw player 1 paddle
-    draw_rectangle(player1_x, player1_y, player1_x + g_PLAYER_WIDTH, player1_y + g_PLAYER_HEIGHT, '|');
+    draw_rectangle(g_player1_x, g_player1_y, g_player1_x + PLAYER_WIDTH, g_player1_y + PLAYER_HEIGHT, '|');
     // Draw player 2 paddle
-    draw_rectangle(player2_x, player2_y, player2_x + g_PLAYER_WIDTH, player2_y + g_PLAYER_HEIGHT, '|');
+    draw_rectangle(g_player2_x, g_player2_y, g_player2_x + PLAYER_WIDTH, g_player2_y + PLAYER_HEIGHT, '|');
 
-    draw_rectangle(ball_x, ball_y, ball_x + 1, ball_y + 1, '+');
+    draw_rectangle(g_ball_x, g_ball_y, g_ball_x + 1, g_ball_y + 1, '+');
 
     fflush(stdout);
     return 0;
 }
 
 void update() {
-    ball_x += ball_dir_x;
-    ball_y += ball_dir_y;
+    g_ball_x += g_ball_dir_x;
+    g_ball_y += g_ball_dir_y;
 }
 
-int input(int playerIndex) {
+int input() {
     int ch = getchar();
     switch (ch) {
         case 'a':
-            if (playerIndex == 0 && player1_y + 1 < g_HEIGHT) player1_y += 1;
+            if (g_player_index == 0 && g_player1_y + 1 < HEIGHT) g_player1_y += 1;
             return 0;
         case 'z':
-            if (playerIndex == 0 && player1_y - 1 >= 0) player1_y -= 1;
+            if (g_player_index == 0 && g_player1_y - 1 >= 0) g_player1_y -= 1;
             return 0;
         case 'k':
-            if (playerIndex == 1 && player2_y + 1 < g_HEIGHT) player2_y += 1;
+            if (g_player_index == 1 && g_player2_y + 1 < HEIGHT) g_player2_y += 1;
             return 0;
         case 'm':
-            if (playerIndex == 1 && player2_y - 1 >= 0) player2_y -= 1;
+            if (g_player_index == 1 && g_player2_y - 1 >= 0) g_player2_y -= 1;
             return 0;
         case ' ':
             return 1;  // skip turn
@@ -85,8 +87,8 @@ int game_loop() {
         while (1) {
             printf("\e[1;1H\e[2J");
             draw();
-            // if (input(playerIndex)) {
-            // };
+            if (input(playerIndex)) {
+            };
 
             update();
             // [TODO]: remove later or make conditional
@@ -96,8 +98,8 @@ int game_loop() {
 }
 
 int main(void) {
-    player1_y = (int)floor(g_HEIGHT / 2);
-    player2_y = (int)floor(g_HEIGHT / 2);
+    g_player1_y = (int)floor(HEIGHT / 2);
+    g_player2_y = (int)floor(HEIGHT / 2);
     // Main game loop
     while (1) {
         game_loop();
