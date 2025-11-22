@@ -282,10 +282,68 @@ void update() {
     }
 }
 
-void draw_end_game_screen() {}
-void switch_active_player() { g_player_index = (g_player_index == 0) ? 1 : 0; }
-int prompt_for_replay() { return 0; }
+void draw_end_game_screen() {
+    // Clear screen using ANSI escape code
+    printf("\033[2J");
 
+    // Centered title
+    move_cursor(SCREEN_WIDTH / 2 - 11, SCREEN_HEIGHT / 2 - 4);
+    printf("=== GAME OVER ===");
+
+    // Display scores
+    move_cursor(SCREEN_WIDTH / 2 - 15, SCREEN_HEIGHT / 2 - 2);
+    printf("Player 1 Score: %d", g_game_score_pl_1);
+
+    move_cursor(SCREEN_WIDTH / 2 - 15, SCREEN_HEIGHT / 2 - 1);
+    printf("Player 2 Score: %d", g_game_score_pl_2);
+
+    // Determine and display winner
+    move_cursor(SCREEN_WIDTH / 2 - 15, SCREEN_HEIGHT / 2 + 1);
+    if (g_game_score_pl_1 > g_game_score_pl_2) {
+        printf("Player 1 Wins!");
+    } else if (g_game_score_pl_2 > g_game_score_pl_1) {
+        printf("Player 2 Wins!");
+    } else {
+        printf("It's a Tie!");
+    }
+
+    // Prompt to exit
+    move_cursor(SCREEN_WIDTH / 2 - 15, SCREEN_HEIGHT / 2 + 3);
+    printf("Press Enter to exit...");
+
+    // Flush output to ensure immediate display
+    fflush(stdout);
+}
+void switch_active_player() { g_player_index = (g_player_index == 0) ? 1 : 0; }
+void show_final_message() {
+    // Clear screen
+    printf("\033[2J");
+
+    // Center the message
+    move_cursor(SCREEN_WIDTH / 2 - 7, SCREEN_HEIGHT / 2);
+    printf("PONGI-PONG!");
+
+    // Add a blank line below
+    move_cursor(SCREEN_WIDTH / 2 - 10, SCREEN_HEIGHT / 2 + 1);
+    printf("--------------------");
+
+    fflush(stdout);
+}
+int prompt_play_again() {
+    char choice;
+    while (1) {
+        printf("Do you want to play again? (Y/N): ");
+        scanf(" %c", &choice);  // Space before %c skips whitespace/newline
+
+        if (choice == 'Y' || choice == 'y') {
+            return 1;  // Play again
+        } else if (choice == 'N' || choice == 'n') {
+            return 0;  // Exit
+        } else {
+            printf("Invalid input. Please enter Y or N.\n");
+        }
+    }
+}
 int main(void) {
     // Main game loop
     // [TODO]: remove later or make conditional
@@ -330,6 +388,11 @@ int main(void) {
             // [TODO]: remove later or make conditional
             usleep(FPS);
         }
+        draw_end_game_screen();
+        if (prompt_play_again() == 0) {
+            break;
+        };
     }
+    show_final_message();
     return 0;
 }
