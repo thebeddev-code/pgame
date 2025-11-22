@@ -209,7 +209,7 @@ int capture_input() {
                     }
                     break;
                 case 'z':  // move down
-                    if (g_player1_y + 1 < SCREEN_HEIGHT) {
+                    if (g_player1_y + 1 < SCREEN_HEIGHT - PLAYER_HEIGHT) {
                         g_player1_y += 1;
                         prevKey = 'z';
                     }
@@ -239,7 +239,7 @@ int capture_input() {
                     }
                     break;
                 case 'm':  // move down
-                    if (g_player2_y + 1 < SCREEN_HEIGHT) {
+                    if (g_player2_y + 1 < SCREEN_HEIGHT - PLAYER_HEIGHT) {
                         g_player2_y += 1;
                         prevKey = 'm';
                     }
