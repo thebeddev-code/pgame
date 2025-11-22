@@ -28,43 +28,49 @@ int g_ball_prev_y;
 int g_ball_dir_x;
 int g_ball_dir_y;
 
-int g_ball_target_player = 1;
+int g_ball_target_player;
 
 // Active player index
-int g_player_index = 0;
+int g_player_index;
 
 // Score
-int g_game_score_pl_1 = 0;
-int g_game_score_pl_2 = 0;
+int g_game_score_pl_1;
+int g_game_score_pl_2;
 
 // State
 
-int g_is_game_paused = 0;
-int g_turns_taken = 0;
+int g_is_game_paused;
+int g_turns_taken;
 
 // Initializing our game state
 void init_game_state(int reset_score) {
+    // Player
     g_player1_x = 1 + PLAYER_OFFSET_FROM_WALL;
     g_player2_x = SCREEN_WIDTH - 2 - PLAYER_OFFSET_FROM_WALL;
 
     g_player1_y = (SCREEN_HEIGHT / 2) - (PLAYER_HEIGHT / 2);
     g_player2_y = (SCREEN_HEIGHT / 2) - (PLAYER_HEIGHT / 2);
 
+    // Ball
     g_ball_x = SCREEN_WIDTH / 2;
     g_ball_y = SCREEN_HEIGHT / 2;
-
+    // Ball prev pos
     g_ball_prev_x = g_ball_x;
     g_ball_prev_y = g_ball_y;
-
+    // Ball dir
     g_ball_dir_x = -1;
     g_ball_dir_y = 0;
 
+    g_ball_target_player = 1;
+    // current active player index
     g_player_index = 0;
 
+    // State
     g_is_game_paused = 1;
     g_turns_taken = 0;
 
     if (reset_score == 1) {
+        // Score
         g_game_score_pl_1 = 0;
         g_game_score_pl_2 = 0;
     }
@@ -143,7 +149,10 @@ void handle_collision() {
             g_ball_prev_x = g_ball_x;
             g_ball_prev_y = g_ball_y;
             // Only stop the game if the ball receiving player got the ball
-            if (g_ball_target_player == 0) game_pause();
+            if (g_ball_target_player == 0) {
+                g_ball_target_player = 1;
+                game_pause();
+            };
         }
 
         // Player 2 (right paddle)
@@ -155,7 +164,10 @@ void handle_collision() {
             g_ball_prev_x = g_ball_x;
             g_ball_prev_y = g_ball_y;
             // Only stop the game if the ball receiving player got the ball
-            if (g_ball_target_player == 1) game_pause();
+            if (g_ball_target_player == 1) {
+                g_ball_target_player = 1;
+                game_pause();
+            };
         }
     }
     // Checking collision with the top/bottom borders
@@ -170,12 +182,12 @@ void handle_collision() {
     // If so increase, the ball sender's score
     if (g_ball_x - 1 <= BORDERS_OFFSET) {
         g_game_score_pl_2 += 1;
-        game_pause();
+        g_player_index = 0;
     }
 
     if (g_ball_x + 1 >= SCREEN_WIDTH - BORDERS_OFFSET) {
         g_game_score_pl_1 += 1;
-        game_pause();
+        g_player_index = 1;
     }
 }
 
@@ -246,7 +258,6 @@ int capture_input() {
         }
     }
 
-    g_player_index = (g_player_index == 0) ? 1 : 0;
     return 0;
 }
 
@@ -258,12 +269,13 @@ void update() {
 }
 
 void draw_end_game_screen() {}
+void switch_active_player() { g_player_index = (g_player_index == 0) ? 1 : 0; }
 int prompt_for_replay() { return 0; }
 
 int main(void) {
     // Main game loop
     // [TODO]: remove later or make conditional
-    int FPS = (1000 / 25) * 1000;
+    int FPS = (1000 / 60) * 1000;
     while (1) {
         init_game_state(1);
         int prev_game_score_pl_1 = g_game_score_pl_1;
@@ -277,8 +289,9 @@ int main(void) {
             fflush(stdout);
             // By default it seems that getchar causes stdout to fflush
 
-            if (g_turns_taken < 2) {
+            if (g_is_game_paused == 1) {
                 capture_input();
+                switch_active_player();
                 g_turns_taken += 1;
             }
             // unpause the game since the players taken their turns
@@ -289,13 +302,11 @@ int main(void) {
             update();
 
             // Reset game state if scores have updated
-            prev_game_score_pl_1 = g_game_score_pl_1;
-            prev_game_score_pl_2 = g_game_score_pl_2;
-
-            if (prev_game_score_pl_1 != g_game_score_pl_1 || prev_game_score_pl_2 != g_game_score_pl_1) {
+            if (prev_game_score_pl_1 < g_game_score_pl_1 || prev_game_score_pl_2 < g_game_score_pl_2) {
                 init_game_state(0);
+                prev_game_score_pl_1 = g_game_score_pl_1;
+                prev_game_score_pl_2 = g_game_score_pl_2;
             }
-
             // [TODO]: remove later or make conditional
             usleep(FPS);
         }
