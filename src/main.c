@@ -5,9 +5,10 @@
 static const int BORDERS_OFFSET = 1;
 static const int PLAYER_OFFSET_FROM_WALL = 2;
 static const int SCREEN_WIDTH = 80;
-static const int SCREEN_HEIGHT = 25;
+static const int SCREEN_HEIGHT = 23;
 static const int PLAYER_WIDTH = 1;
 static const int PLAYER_HEIGHT = 3;
+static const int CURSOR_OFFSET_Y = 1;
 
 // [---] Declaring our game state
 
@@ -122,14 +123,25 @@ void draw_ui() {
     }
 
     int text_offset = 1;
-    move_cursor((SCREEN_WIDTH / 2) - 2, 1);
-    printf("%s", "P O N G");
+    move_cursor((SCREEN_WIDTH / 2) - 8, 1);
+    printf("%s", "...:::P O N G:::..");
     // We can't use arrays and thus sprintf
     move_cursor(2 + text_offset, 2);
-    printf("P1: %d", g_game_score_pl_1);
+    if (g_player_index == 0) {
+        printf("[*] P1: %d", g_game_score_pl_1);  // Active Player 1
+    } else {
+        printf("[ ] P1: %d", g_game_score_pl_1);  // Inactive Player 1
+    }
 
-    move_cursor(SCREEN_WIDTH - 4 - BORDERS_OFFSET - text_offset, 2);
-    printf("P2: %d", g_game_score_pl_2);
+    move_cursor(SCREEN_WIDTH - 8 - BORDERS_OFFSET - text_offset, 2);
+    if (g_player_index == 1) {
+        printf("[*] P2: %d", g_game_score_pl_2);
+    } else {
+        printf("[ ] P2: %d", g_game_score_pl_2);
+    }
+
+    move_cursor(0, SCREEN_HEIGHT + BORDERS_OFFSET);
+    printf("...:::player 1: a/z (up/down) ; player 2: k/m (up/down) ; SPACEBAR to Skip turn:::...");
 }
 
 void game_pause() {
@@ -196,8 +208,9 @@ int capture_input() {
     char prevKey = 0;
 
     while (!done) {
-        move_cursor(BORDERS_OFFSET, SCREEN_HEIGHT + BORDERS_OFFSET);
+        move_cursor(BORDERS_OFFSET, SCREEN_HEIGHT + BORDERS_OFFSET + CURSOR_OFFSET_Y);
         printf("\033[J");
+        printf("---> ");
         int ch = getchar();
 
         if (g_player_index == 0) {
