@@ -97,17 +97,19 @@ void draw_text(int x, int y, char* text) {
     printf("%s", text);
 }
 
-void draw_ui(char border_draw_char) {
+void draw_ui() {
+    // The top and bottom
+    for (int y = 0; y < SCREEN_HEIGHT; ++y) {
+        draw_rectangle(0, y, 1, y + 1, '|');
+        draw_rectangle(SCREEN_WIDTH - 1, y, SCREEN_WIDTH, y + 1, '|');
+    }
     // The left and right
     for (int x = 0; x < SCREEN_WIDTH; ++x) {
+        char border_draw_char = (x == 0 || x == SCREEN_WIDTH - 1) ? '+' : '-';
         draw_rectangle(x, 0, x + 1, 1, border_draw_char);
         draw_rectangle(x, SCREEN_HEIGHT - 1, x + 1, SCREEN_HEIGHT, border_draw_char);
     }
-    // The top and bottom
-    for (int y = 0; y < SCREEN_HEIGHT; ++y) {
-        draw_rectangle(0, y, 1, y + 1, border_draw_char);
-        draw_rectangle(SCREEN_WIDTH - 1, y, SCREEN_WIDTH, y + 1, border_draw_char);
-    }
+
     // The mid line
     for (int y = 0; y < SCREEN_HEIGHT - BORDERS_OFFSET; ++y) {
         draw_rectangle(SCREEN_WIDTH / 2, y, (SCREEN_WIDTH / 2) + 1, y + 1, '|');
@@ -267,7 +269,7 @@ int main(void) {
         int prev_game_score_pl_2 = g_game_score_pl_2;
         while (1) {
             printf("\e[1;1H\e[2J");
-            draw_ui('*');
+            draw_ui();
             draw();
             // flushing output, so that instead of being stored in the buffer it would be ouputted to the
             // screen
