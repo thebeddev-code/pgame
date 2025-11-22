@@ -1,18 +1,23 @@
 #include <ncurses.h>
 #include <stdio.h>
 // Constants for screen size
-static const int BORDERS_OFFSET = 1;
-static const int GOAL_OFFSET_FROM_BORDER = 5;
-static const int PLAYER_OFFSET_FROM_WALL = 2;
+// SCREEN
 static const int SCREEN_WIDTH = 80;
 static const int SCREEN_HEIGHT = 23;
+static const int GAME_WINDOW_LEFT_OFFSET = 15;
+static const int BORDERS_OFFSET = 1;
+static const int PLAYER_OFFSET_FROM_WALL = 2;
+// PLAYER
 static const int PLAYER_WIDTH = 1;
 static const int PLAYER_HEIGHT = 3;
-static const int CURSOR_OFFSET_Y = 1;
+// BALL
+static const char BALL_DRAW_CHAR = '@';
+// OTHER
 static const int MAX_SCORE = 21;
-static const int GAME_WINDOW_LEFT_OFFSET = 15;
-// [---] Declaring our game state
+static const int GOAL_OFFSET_FROM_BORDER = 5;
+static const int CURSOR_OFFSET_Y = 1;
 
+// [---] Declaring our game state
 // Player
 int g_player1_x;
 int g_player2_x;
@@ -90,7 +95,7 @@ int draw() {
     // Draw player 2 paddle
     draw_rectangle(g_player2_x, g_player2_y, g_player2_x + PLAYER_WIDTH, g_player2_y + PLAYER_HEIGHT, '|');
 
-    draw_rectangle(g_ball_x, g_ball_y, g_ball_x + 1, g_ball_y + 1, '.');
+    draw_rectangle(g_ball_x, g_ball_y, g_ball_x + 1, g_ball_y + 1, BALL_DRAW_CHAR);
 
     return 0;
 }
