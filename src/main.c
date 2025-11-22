@@ -9,6 +9,7 @@ static const int SCREEN_HEIGHT = 23;
 static const int PLAYER_WIDTH = 1;
 static const int PLAYER_HEIGHT = 3;
 static const int CURSOR_OFFSET_Y = 1;
+static const int MAX_SCORE = 21;
 
 // [---] Declaring our game state
 
@@ -73,7 +74,7 @@ void init_game_state(int reset_score) {
     if (reset_score == 1) {
         // Score
         g_game_score_pl_1 = 0;
-        g_game_score_pl_2 = 0;
+        g_game_score_pl_2 = 20;
     }
 }
 
@@ -293,6 +294,7 @@ int main(void) {
         init_game_state(1);
         int prev_game_score_pl_1 = g_game_score_pl_1;
         int prev_game_score_pl_2 = g_game_score_pl_2;
+
         while (1) {
             printf("\e[1;1H\e[2J");
             draw_ui();
@@ -301,6 +303,11 @@ int main(void) {
             // screen
             fflush(stdout);
             // By default it seems that getchar causes stdout to fflush
+
+            //  Exiting loop once score reaches 21 points
+            if (g_game_score_pl_1 >= MAX_SCORE || g_game_score_pl_2 >= MAX_SCORE) {
+                break;
+            }
 
             if (g_is_game_paused == 1) {
                 capture_input();
@@ -323,7 +330,6 @@ int main(void) {
             // [TODO]: remove later or make conditional
             usleep(FPS);
         }
-        break;
     }
     return 0;
 }
