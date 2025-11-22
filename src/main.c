@@ -2,6 +2,7 @@
 #include <stdio.h>
 // Constants for screen size
 static const int BORDERS_OFFSET = 1;
+static const int GOAL_OFFSET_FROM_BORDER = 5;
 static const int PLAYER_OFFSET_FROM_WALL = 2;
 static const int SCREEN_WIDTH = 80;
 static const int SCREEN_HEIGHT = 23;
@@ -9,7 +10,6 @@ static const int PLAYER_WIDTH = 1;
 static const int PLAYER_HEIGHT = 3;
 static const int CURSOR_OFFSET_Y = 1;
 static const int MAX_SCORE = 21;
-
 // [---] Declaring our game state
 
 // Player
@@ -73,7 +73,7 @@ void init_game_state(int reset_score) {
     }
 }
 
-void move_cursor(int x, int y) { printf("\033[%d;%dH", y, x); }
+void move_cursor(int x, int y) { printf("\033[%d;%dH", y, x + 5); }
 
 // --- DRAW ---
 
@@ -103,12 +103,12 @@ void draw_text(int x, int y, char text) {
 }
 
 void draw_ui() {
-    // The top and bottom
-    for (int y = 0; y < SCREEN_HEIGHT; ++y) {
-        draw_rectangle(0, y, 1, y + 1, '|');
-        draw_rectangle(SCREEN_WIDTH - 1, y, SCREEN_WIDTH, y + 1, '|');
-    }
     // The left and right
+    // for (int y = 0; y < SCREEN_HEIGHT; ++y) {
+    //     draw_rectangle(0, y, 1, y + 1, '|');
+    //     draw_rectangle(SCREEN_WIDTH - 1, y, SCREEN_WIDTH, y + 1, '|');
+    // }
+    // The top and bottom
     for (int x = 0; x < SCREEN_WIDTH; ++x) {
         char border_draw_char = (x == 0 || x == SCREEN_WIDTH - 1) ? '+' : '-';
         draw_rectangle(x, 0, x + 1, 1, border_draw_char);
@@ -269,12 +269,12 @@ void handle_collision() {
     }
     // Checking if hits the left/right borders
     // If so increase, the ball sender's score
-    if (g_ball_x - 1 <= BORDERS_OFFSET) {
+    if (g_ball_x - 1 <= BORDERS_OFFSET - GOAL_OFFSET_FROM_BORDER) {
         g_game_score_pl_2 += 1;
         g_player_index = 0;
     }
 
-    if (g_ball_x + 1 >= SCREEN_WIDTH - BORDERS_OFFSET) {
+    if (g_ball_x + 1 >= SCREEN_WIDTH - BORDERS_OFFSET + GOAL_OFFSET_FROM_BORDER) {
         g_game_score_pl_1 += 1;
         g_player_index = 1;
     }
