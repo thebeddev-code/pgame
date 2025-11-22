@@ -10,6 +10,7 @@ static const int PLAYER_WIDTH = 1;
 static const int PLAYER_HEIGHT = 3;
 static const int CURSOR_OFFSET_Y = 1;
 static const int MAX_SCORE = 21;
+static const int GAME_WINDOW_LEFT_OFFSET = 15;
 // [---] Declaring our game state
 
 // Player
@@ -32,7 +33,6 @@ int g_ball_dir_y;
 int g_ball_target_player;
 
 // Active player index
-int g_player_index;
 
 // Score
 int g_game_score_pl_1;
@@ -63,8 +63,6 @@ void init_game_state(int reset_score) {
     g_ball_dir_y = 0;
 
     g_ball_target_player = 1;
-    // current active player index
-    g_player_index = 0;
 
     if (reset_score == 1) {
         // Score
@@ -73,7 +71,7 @@ void init_game_state(int reset_score) {
     }
 }
 
-void move_cursor(int x, int y) { printf("\033[%d;%dH", y, x + 5); }
+void move_cursor(int x, int y) { printf("\033[%d;%dH", y, x + GAME_WINDOW_LEFT_OFFSET); }
 
 // --- DRAW ---
 
@@ -92,7 +90,7 @@ int draw() {
     // Draw player 2 paddle
     draw_rectangle(g_player2_x, g_player2_y, g_player2_x + PLAYER_WIDTH, g_player2_y + PLAYER_HEIGHT, '|');
 
-    draw_rectangle(g_ball_x, g_ball_y, g_ball_x + 1, g_ball_y + 1, '@');
+    draw_rectangle(g_ball_x, g_ball_y, g_ball_x + 1, g_ball_y + 1, '.');
 
     return 0;
 }
@@ -125,14 +123,14 @@ void draw_ui() {
     printf("%s", "...:::P O N G:::..");
     // We can't use arrays and thus sprintf
     move_cursor(2 + text_offset, 2);
-    if (g_player_index == 0) {
+    if (g_ball_dir_x == -1) {
         printf("[*] P1: %d", g_game_score_pl_1);  // Active Player 1
     } else {
         printf("[ ] P1: %d", g_game_score_pl_1);  // Inactive Player 1
     }
 
     move_cursor(SCREEN_WIDTH - 8 - BORDERS_OFFSET - text_offset, 2);
-    if (g_player_index == 1) {
+    if (g_ball_dir_x == 1) {
         printf("[*] P2: %d", g_game_score_pl_2);
     } else {
         printf("[ ] P2: %d", g_game_score_pl_2);
@@ -271,12 +269,10 @@ void handle_collision() {
     // If so increase, the ball sender's score
     if (g_ball_x - 1 <= BORDERS_OFFSET - GOAL_OFFSET_FROM_BORDER) {
         g_game_score_pl_2 += 1;
-        g_player_index = 0;
     }
 
     if (g_ball_x + 1 >= SCREEN_WIDTH - BORDERS_OFFSET + GOAL_OFFSET_FROM_BORDER) {
         g_game_score_pl_1 += 1;
-        g_player_index = 1;
     }
 }
 
@@ -299,6 +295,7 @@ int main(void) {
     noecho();
     nodelay(stdscr, TRUE);
     keypad(stdscr, TRUE);
+    curs_set(0);
     // Main game loop
     // [TODO]: remove later or make conditional
     int FPS = (1000 / 30) * 1000;
