@@ -1,4 +1,3 @@
-#include <math.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -84,24 +83,35 @@ int draw() {
     return 0;
 }
 
-void draw_text(int x, int y, const char* text) {
+void draw_text(int x, int y, char* text) {
     move_cursor(x, y);
     printf("%s", text);
 }
 
 void draw_ui(char border_draw_char) {
+    // The left and right
     for (int x = 0; x < SCREEN_WIDTH; ++x) {
         draw_rectangle(x, 0, x + 1, 1, border_draw_char);
         draw_rectangle(x, SCREEN_HEIGHT - 1, x + 1, SCREEN_HEIGHT, border_draw_char);
     }
-    for (int y = 1; y < SCREEN_HEIGHT - 1; ++y) {
+    // The top and bottom
+    for (int y = 0; y < SCREEN_HEIGHT; ++y) {
         draw_rectangle(0, y, 1, y + 1, border_draw_char);
         draw_rectangle(SCREEN_WIDTH - 1, y, SCREEN_WIDTH, y + 1, border_draw_char);
     }
+    // The mid line
+    for (int y = 0; y < SCREEN_HEIGHT; ++y) {
+        draw_rectangle(SCREEN_WIDTH / 2, y, (SCREEN_WIDTH / 2) + 1, y + 1, '|');
+    }
 
-    draw_text((SCREEN_WIDTH / 2) - (BORDERS_OFFSET / 2), 1, "PONG");
-    draw_text(2, 2, "P1: 0");
-    draw_text(SCREEN_WIDTH - 4, 2, "P2: 0");
+    int text_offset = 1;
+    draw_text((SCREEN_WIDTH / 2) - 2, 1, "P O N G");
+    // We can't use arrays and thus sprintf
+    move_cursor(2 + text_offset, 2);
+    printf("P1: %d", g_game_score_pl_1);
+
+    move_cursor(SCREEN_WIDTH - 4 - BORDERS_OFFSET - text_offset, 2);
+    printf("P2: %d", g_game_score_pl_2);
 }
 
 int capture_input() {
