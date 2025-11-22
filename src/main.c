@@ -151,14 +151,15 @@ void handle_collision() {
             // game_pause();
         }
     }
-    // Checking collision with the wall
+    // Checking collision with the top/bottom borders
+    // If so reflect ball's y dir
     if (g_ball_y - 1 <= BORDERS_OFFSET) {
         g_ball_dir_y = 1;
     }
     if (g_ball_y + 1 >= SCREEN_HEIGHT - BORDERS_OFFSET) {
         g_ball_dir_y = -1;
     }
-    // Checking if hits the left or right borders
+    // Checking if hits the left/right borders
     // If so increase, the ball sender's score
     if (g_ball_x - 1 <= BORDERS_OFFSET) {
         g_game_score_pl_2 += 1;
@@ -248,12 +249,17 @@ void update() {
     }
 }
 
+void draw_end_game_screen() {}
+int prompt_for_replay() { return 0; }
+
 int main(void) {
     // Main game loop
     // [TODO]: remove later or make conditional
     int FPS = (1000 / 25) * 1000;
     while (1) {
         init_game_state(1);
+        int prev_game_score_pl_1 = g_game_score_pl_1;
+        int prev_game_score_pl_2 = g_game_score_pl_2;
         while (1) {
             printf("\e[1;1H\e[2J");
             draw_ui('*');
@@ -267,12 +273,20 @@ int main(void) {
                 capture_input();
                 g_turns_taken += 1;
             }
-            // unpause game since players have done their moves
+            // unpause the game since the players taken their turns
             if (g_turns_taken == 2) {
                 g_is_game_paused = 0;
             }
             handle_collision();
             update();
+
+            // Reset game state if scores have updated
+            prev_game_score_pl_1 = g_game_score_pl_1;
+            prev_game_score_pl_2 = g_game_score_pl_2;
+
+            if (prev_game_score_pl_1 != g_game_score_pl_1 || prev_game_score_pl_2 != g_game_score_pl_1) {
+                init_game_state(0);
+            }
 
             // [TODO]: remove later or make conditional
             usleep(FPS);
