@@ -28,6 +28,8 @@ int g_ball_prev_y;
 int g_ball_dir_x;
 int g_ball_dir_y;
 
+int g_ball_target_player = 1;
+
 // Active player index
 int g_player_index = 0;
 
@@ -54,13 +56,13 @@ void init_game_state(int reset_score) {
     g_ball_prev_x = g_ball_x;
     g_ball_prev_y = g_ball_y;
 
-    g_ball_dir_x = 1;
+    g_ball_dir_x = -1;
     g_ball_dir_y = 0;
 
     g_player_index = 0;
 
     g_is_game_paused = 1;
-    g_turns_taken = 2;
+    g_turns_taken = 0;
 
     if (reset_score == 1) {
         g_game_score_pl_1 = 0;
@@ -137,7 +139,8 @@ void handle_collision() {
             // Setting the prev position to avoid collision check
             g_ball_prev_x = g_ball_x;
             g_ball_prev_y = g_ball_y;
-            game_pause();
+            // Only stop the game if the ball receiving player got the ball
+            if (g_ball_target_player == 0) game_pause();
         }
 
         // Player 2 (right paddle)
@@ -148,7 +151,8 @@ void handle_collision() {
             // Setting the prev position to avoid collision check
             g_ball_prev_x = g_ball_x;
             g_ball_prev_y = g_ball_y;
-            game_pause();
+            // Only stop the game if the ball receiving player got the ball
+            if (g_ball_target_player == 1) game_pause();
         }
     }
     // Checking collision with the top/bottom borders
