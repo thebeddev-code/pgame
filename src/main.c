@@ -60,7 +60,7 @@ void init_game_state(int reset_score) {
     g_player_index = 0;
 
     g_is_game_paused = 1;
-    g_turns_taken = 0;
+    g_turns_taken = 2;
 
     if (reset_score == 1) {
         g_game_score_pl_1 = 0;
@@ -121,7 +121,40 @@ void draw_ui(char border_draw_char) {
     printf("P2: %d", g_game_score_pl_2);
 }
 
-void handle_collision() {}
+void game_pause() {
+    g_is_game_paused = 1;
+    g_turns_taken = 0;
+}
+
+void handle_collision() {
+    // Checking collision with the player
+    if (g_ball_x != g_ball_prev_x || g_ball_y != g_ball_prev_y) {
+        // Player 1 (left paddle)
+        if (g_ball_x - 1 == g_player1_x && g_ball_y >= g_player1_y &&
+            g_ball_y < g_player1_y + PLAYER_HEIGHT) {
+            g_ball_dir_x = 1;  // Move right
+            g_ball_dir_y = g_ball_y == g_player1_y ? -1 : g_player1_y + PLAYER_HEIGHT - 1 ? 1 : 0;
+            // Setting the prev position to avoid collision check
+            g_ball_prev_x = g_ball_x;
+            g_ball_prev_y = g_ball_y;
+            game_pause();
+        }
+
+        // Player 2 (right paddle)
+        if (g_ball_x + 1 == g_player2_x && g_ball_y >= g_player2_y &&
+            g_ball_y < g_player2_y + PLAYER_HEIGHT) {
+            g_ball_dir_x = -1;  // Move left
+            g_ball_dir_y = g_ball_y == g_player2_y ? -1 : g_player2_y + PLAYER_HEIGHT - 1 ? 1 : 0;
+            // Setting the prev position to avoid collision check
+            g_ball_prev_x = g_ball_x;
+            g_ball_prev_y = g_ball_y;
+            game_pause();
+        }
+    }
+    // Checking collision with the wall
+    if (g_ball_y - 1 <= 0) {
+    }
+}
 
 int capture_input() {
     int done = 0;
@@ -224,7 +257,7 @@ int main(void) {
             if (g_turns_taken == 2) {
                 g_is_game_paused = 0;
             }
-
+            handle_collision();
             update();
 
             // [TODO]: remove later or make conditional
