@@ -35,6 +35,11 @@ int g_player_index = 0;
 int g_game_score_pl_1 = 0;
 int g_game_score_pl_2 = 0;
 
+// State
+
+int g_is_game_paused = 0;
+int g_turns_taken = 0;
+
 // Initializing our game state
 void init_game_state(int reset_score) {
     g_player1_x = 1 + PLAYER_OFFSET_FROM_WALL;
@@ -49,10 +54,13 @@ void init_game_state(int reset_score) {
     g_ball_prev_x = g_ball_x;
     g_ball_prev_y = g_ball_y;
 
-    g_ball_dir_x = 0;
+    g_ball_dir_x = 1;
     g_ball_dir_y = 0;
 
     g_player_index = 0;
+
+    g_is_game_paused = 1;
+    g_turns_taken = 0;
 
     if (reset_score == 1) {
         g_game_score_pl_1 = 0;
@@ -77,9 +85,8 @@ int draw() {
     // Draw player 2 paddle
     draw_rectangle(g_player2_x, g_player2_y, g_player2_x + PLAYER_WIDTH, g_player2_y + PLAYER_HEIGHT, '|');
 
-    // draw_rectangle(g_ball_x, g_ball_y, g_ball_x + 1, g_ball_y + 1, '+');
+    draw_rectangle(g_ball_x, g_ball_y, g_ball_x + 1, g_ball_y + 1, '@');
 
-    fflush(stdout);
     return 0;
 }
 
@@ -114,7 +121,7 @@ void draw_ui(char border_draw_char) {
     printf("P2: %d", g_game_score_pl_2);
 }
 
-void detect_collision() {}
+void handle_collision() {}
 
 int capture_input() {
     int done = 0;
@@ -188,32 +195,37 @@ int capture_input() {
 }
 
 void update() {
-    g_ball_x += g_ball_dir_x;
-    g_ball_y += g_ball_dir_y;
+    if (g_is_game_paused == 0) {
+        g_ball_x += g_ball_dir_x;
+        g_ball_y += g_ball_dir_y;
+    }
 }
 
 int main(void) {
     // Main game loop
     // [TODO]: remove later or make conditional
-    int FPS = (1000 / 60) * 1000;
+    int FPS = (1000 / 25) * 1000;
     while (1) {
         init_game_state(1);
-        int turns_taken = 0;
         while (1) {
             printf("\e[1;1H\e[2J");
-
-            draw();
             draw_ui('*');
+            draw();
             // flushing output, so that instead of being stored in the buffer it would be ouputted to the
             // screen
             fflush(stdout);
             // By default it seems that getchar causes stdout to fflush
-            if (turns_taken < 2) {
+
+            if (g_turns_taken < 2) {
                 capture_input();
-                turns_taken += 1;
+                g_turns_taken += 1;
+            }
+            // unpause game since players have done their moves
+            if (g_turns_taken == 2) {
+                g_is_game_paused = 0;
             }
 
-            // update();
+            update();
 
             // [TODO]: remove later or make conditional
             usleep(FPS);
