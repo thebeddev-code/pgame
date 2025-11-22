@@ -1,6 +1,5 @@
+#include <ncurses.h>
 #include <stdio.h>
-#include <unistd.h>
-
 // Constants for screen size
 static const int BORDERS_OFFSET = 1;
 static const int PLAYER_OFFSET_FROM_WALL = 2;
@@ -41,8 +40,8 @@ int g_game_score_pl_2;
 
 // State
 
-int g_is_game_paused;
-int g_turns_taken;
+// Input state
+int key_a = 0, key_z = 0, key_k = 0, key_m = 0;
 
 // Initializing our game state
 void init_game_state(int reset_score) {
@@ -61,15 +60,11 @@ void init_game_state(int reset_score) {
     g_ball_prev_y = g_ball_y;
     // Ball dir
     g_ball_dir_x = -1;
-    g_ball_dir_y = 1;
+    g_ball_dir_y = 0;
 
     g_ball_target_player = 1;
     // current active player index
     g_player_index = 0;
-
-    // State
-    g_is_game_paused = 1;
-    g_turns_taken = 0;
 
     if (reset_score == 1) {
         // Score
@@ -144,85 +139,50 @@ void draw_ui() {
     }
 
     move_cursor(0, SCREEN_HEIGHT + BORDERS_OFFSET);
-    printf("...:::player 1: a/z (up/down) ; player 2: k/m (up/down) ; SPACEBAR to Skip turn:::...");
-}
-
-void game_pause() {
-    g_is_game_paused = 1;
-    g_turns_taken = 0;
+    printf("...:::player 1: a/z or w/s (up/down) ; player 2: k/m or arrow up/down (up/down):::...");
 }
 
 // --- INPUT ---
+void reset_keys() { key_a = 0, key_z = 0, key_k = 0, key_m = 0; }
 
-int capture_input() {
-    int done = 0;
-    char prevKey = 0;
+void handle_input() {
+    reset_keys();
 
-    while (!done) {
-        move_cursor(BORDERS_OFFSET, SCREEN_HEIGHT + BORDERS_OFFSET + CURSOR_OFFSET_Y);
-        printf("\033[J");
-        printf("---> ");
-        int ch = getchar();
-
-        if (g_player_index == 0) {
-            switch (ch) {
-                case 'a':  // move up
-                    if (g_player1_y > 0) {
-                        g_player1_y -= 1;
-                        prevKey = 'a';
-                    }
-                    break;
-                case 'z':  // move down
-                    if (g_player1_y + 1 < SCREEN_HEIGHT - PLAYER_HEIGHT) {
-                        g_player1_y += 1;
-                        prevKey = 'z';
-                    }
-                    break;
-                case '\n':
-                    // End turn ONLY if last key was a move key (from a specific player)
-                    // Since in case of player whose turn is next was pressing 'enter'
-                    // That would trigger move, even tho the active player has done no move
-                    if (prevKey == 'a' || prevKey == 'z') {
-                        done = 1;
-                    }
-                    break;
-                case ' ':
-                    done = 1;
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        if (g_player_index == 1) {
-            switch (ch) {
-                case 'k':  // move up
-                    if (g_player2_y > 0) {
-                        g_player2_y -= 1;
-                        prevKey = 'k';
-                    }
-                    break;
-                case 'm':  // move down
-                    if (g_player2_y + 1 < SCREEN_HEIGHT - PLAYER_HEIGHT) {
-                        g_player2_y += 1;
-                        prevKey = 'm';
-                    }
-                    break;
-                case '\n':
-                    if (prevKey == 'k' || prevKey == 'm') {
-                        done = 1;
-                    }
-                    break;
-                case ' ':
-                    done = 1;
-                    break;
-                default:
-                    break;
-            }
+    int ch;
+    while ((ch = getch()) != ERR) {
+        switch (ch) {
+            case 'a':
+                key_a = 1;
+                break;
+            case 'z':
+                key_z = 1;
+                break;
+            case 'k':
+                key_k = 1;
+                break;
+            case 'm':
+                key_m = 1;
+                break;
+            case KEY_UP:
+                key_k = 1;
+                break;
+            case KEY_DOWN:
+                key_m = 1;
+                break;
+            case 'w':
+                key_a = 1;
+                break;
+            case 's':
+                key_z = 1;
+                break;
         }
     }
 
-    return 0;
+    // Update positions based on key states
+    if (key_a && g_player1_y > 0) g_player1_y--;
+    if (key_z && g_player1_y < SCREEN_HEIGHT - PLAYER_HEIGHT) g_player1_y++;
+    if (key_k && g_player2_y > 0) g_player2_y--;
+    if (key_m && g_player2_y < SCREEN_HEIGHT - PLAYER_HEIGHT) g_player2_y++;
 }
 
 // --- COLLISION ---
@@ -237,7 +197,6 @@ void handle_ball_motion(int player_index) {
         // Only stop the game if the ball receiving player got the ball
         if (g_ball_target_player == 0) {
             g_ball_target_player = 1;
-            game_pause();
         };
     }
 
@@ -250,7 +209,6 @@ void handle_ball_motion(int player_index) {
         // Only stop the game if the ball receiving player got the ball
         if (g_ball_target_player == 1) {
             g_ball_target_player = 0;
-            game_pause();
         };
     }
 }
@@ -325,13 +283,9 @@ void handle_collision() {
 // --- UPDATE ---
 
 void update() {
-    if (g_is_game_paused == 0) {
-        g_ball_x += g_ball_dir_x;
-        g_ball_y += g_ball_dir_y;
-    }
+    g_ball_x += g_ball_dir_x;
+    g_ball_y += g_ball_dir_y;
 }
-
-void switch_active_player() { g_player_index = (g_player_index == 0) ? 1 : 0; }
 
 void draw_end_game_screen();
 int prompt_play_again();
@@ -340,9 +294,14 @@ void show_final_message();
 // MAIN GAME
 
 int main(void) {
+    initscr();
+    cbreak();
+    noecho();
+    nodelay(stdscr, TRUE);
+    keypad(stdscr, TRUE);
     // Main game loop
     // [TODO]: remove later or make conditional
-    int FPS = (1000 / 25) * 1000;
+    int FPS = (1000 / 30) * 1000;
     while (1) {
         init_game_state(1);
         int prev_game_score_pl_1 = g_game_score_pl_1;
@@ -362,15 +321,7 @@ int main(void) {
                 break;
             }
 
-            if (g_is_game_paused == 1) {
-                capture_input();
-                switch_active_player();
-                g_turns_taken += 1;
-            }
-            // unpause the game since the players taken their turns
-            if (g_turns_taken == 2) {
-                g_is_game_paused = 0;
-            }
+            handle_input();
             handle_collision();
             update();
 
@@ -381,7 +332,7 @@ int main(void) {
                 prev_game_score_pl_2 = g_game_score_pl_2;
             }
             // [TODO]: remove later or make conditional
-            usleep(FPS);
+            napms(25);
         }
         draw_end_game_screen();
         if (prompt_play_again() == 0) {

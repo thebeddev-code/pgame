@@ -2,9 +2,9 @@
 clang-format --style=file:.clang-format main.c
 
 if [[ $1 == "-i" ]]; then
-  errors=$(gcc -std=gnu11 -Wall -Wextra main.c -o main.exe 2>&1)
+  errors=$(gcc -std=gnu11 -Wall -Wextra main.c -o main.exe -lncurses  2>&1)
 else
-  errors=$(gcc -std=gnu11 -Wall -Werror -Wextra main.c -o main.exe 2>&1)
+  errors=$(gcc -std=gnu11 -Wall -Werror -Wextra main.c -o main.exe -lncurses 2>&1)
 fi
 
 if [ $? -ne 0 ]; then
