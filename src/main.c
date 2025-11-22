@@ -100,7 +100,7 @@ void draw_ui(char border_draw_char) {
         draw_rectangle(SCREEN_WIDTH - 1, y, SCREEN_WIDTH, y + 1, border_draw_char);
     }
     // The mid line
-    for (int y = 0; y < SCREEN_HEIGHT; ++y) {
+    for (int y = 0; y < SCREEN_HEIGHT - BORDERS_OFFSET; ++y) {
         draw_rectangle(SCREEN_WIDTH / 2, y, (SCREEN_WIDTH / 2) + 1, y + 1, '|');
     }
 
@@ -119,7 +119,7 @@ int capture_input() {
     char prevKey = 0;
 
     while (!done) {
-        move_cursor(SCREEN_WIDTH + BORDERS_OFFSET + 1, SCREEN_HEIGHT + BORDERS_OFFSET);
+        move_cursor(BORDERS_OFFSET, SCREEN_HEIGHT + BORDERS_OFFSET);
         printf("\033[J");
         int ch = getchar();
 
