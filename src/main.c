@@ -92,9 +92,9 @@ int draw() {
     return 0;
 }
 
-void draw_text(int x, int y, char* text) {
+void draw_text(int x, int y, char text) {
     move_cursor(x, y);
-    printf("%s", text);
+    printf("%c", text);
 }
 
 void draw_ui() {
@@ -116,7 +116,8 @@ void draw_ui() {
     }
 
     int text_offset = 1;
-    draw_text((SCREEN_WIDTH / 2) - 2, 1, "P O N G");
+    move_cursor((SCREEN_WIDTH / 2) - 2, 1);
+    printf("%s", "P O N G");
     // We can't use arrays and thus sprintf
     move_cursor(2 + text_offset, 2);
     printf("P1: %d", g_game_score_pl_1);
