@@ -262,18 +262,21 @@ void handle_collision() {
         int is_colliding_x_pl_1 = g_ball_x - 1 == g_player1_x;
         // Checking for collision
         if (is_colliding_x_pl_1 && g_ball_y >= g_player1_y && g_ball_y < g_player1_y + PLAYER_HEIGHT) {
-            handle_ball_motion(1);
-        } else if (g_ball_y != 0) {
+            handle_ball_motion(0);
+        }
+        // EDGE CASES 45 DEG
+        // only check for diagonal motion
+        if (g_ball_dir_y > 0) {
             // PLAYER 1 EDGE CASES
             if (is_colliding_x_pl_1 && g_ball_y + 1 == g_player1_y) {
                 //  Repositioning the ball to be on the paddle
-                g_ball_y++;
+                g_ball_y = g_player1_y;
                 handle_ball_motion(0);
             }
 
-            if (is_colliding_x_pl_1 && g_ball_y - 1 == g_player1_y) {
+            if (is_colliding_x_pl_1 && g_ball_y - 1 == g_player1_y + PLAYER_HEIGHT - 1) {
                 //  Repositioning the ball to be on the paddle
-                g_ball_y -= 1;
+                g_ball_y = g_player1_y + PLAYER_HEIGHT - 1;
                 handle_ball_motion(0);
             }
         }
@@ -283,21 +286,18 @@ void handle_collision() {
         // Checking for collision
         if (is_colliding_x_pl_2 && g_ball_y >= g_player2_y && g_ball_y < g_player2_y + PLAYER_HEIGHT) {
             handle_ball_motion(1);
-        } else if (g_ball_y != 0) {
-            // PLAYER 2 EDGE CASES
-
-            if (is_colliding_x_pl_2 && g_ball_y + 1 >= g_player2_y &&
-                g_ball_y < g_player2_y + PLAYER_HEIGHT) {
-                g_ball_y -= 1;
+            // only check for diagonal motion
+        }
+        // EDGE CASES 45 DEG
+        if (g_ball_dir_y > 0) {
+            if (is_colliding_x_pl_2 && g_ball_y + 1 == g_player2_y) {
+                g_ball_y = g_player2_y;
                 handle_ball_motion(1);
             }
 
-            // PLAYER 2 EDGE CASES
-
-            if (is_colliding_x_pl_2 && g_ball_y - 1 >= g_player2_y &&
-                g_ball_y < g_player2_y + PLAYER_HEIGHT) {
-                g_ball_y += 1;
-                handle_ball_motion(2);
+            if (is_colliding_x_pl_2 && g_ball_y - 1 == g_player2_y + PLAYER_HEIGHT - 1) {
+                g_ball_y = g_player2_y + PLAYER_HEIGHT - 1;
+                handle_ball_motion(1);
             }
         }
     }
@@ -342,7 +342,7 @@ void show_final_message();
 int main(void) {
     // Main game loop
     // [TODO]: remove later or make conditional
-    int FPS = (1000 / 60) * 1000;
+    int FPS = (1000 / 25) * 1000;
     while (1) {
         init_game_state(1);
         int prev_game_score_pl_1 = g_game_score_pl_1;
