@@ -3,32 +3,63 @@
 #include <unistd.h>
 
 // Constants for screen size
-static const int BORDERS_OFFSET = 3;
-static const int SCREEN_WIDTH = 80 - 2;
-static const int SCREEN_HEIGHT = 25 - 2;
+static const int BORDERS_OFFSET = 1;
+static const int PLAYER_OFFSET_FROM_WALL = 2;
+static const int SCREEN_WIDTH = 80;
+static const int SCREEN_HEIGHT = 25;
 static const int PLAYER_WIDTH = 1;
 static const int PLAYER_HEIGHT = 3;
-// Player 1 paddle position and size
-int g_player1_x = BORDERS_OFFSET - 1;
-int g_player1_y = 0;
 
-// Player 2 paddle position and size
-int g_player2_x = SCREEN_WIDTH - BORDERS_OFFSET;
-int g_player2_y = 0;
+// [---] Declaring our game state
 
-// Ball position
-int g_ball_x = SCREEN_WIDTH / 2;
-int g_ball_y = SCREEN_HEIGHT / 2;
+// Player
+int g_player1_x;
+int g_player2_x;
 
-// Ball previous position (for clearing)
-int g_ball_prev_x = SCREEN_WIDTH / 2;
-int g_ball_prev_y = SCREEN_HEIGHT / 2;
+int g_player1_y;
+int g_player2_y;
 
-// Ball direction
-int g_ball_dir_x = 1;
-int g_ball_dir_y = 0;
+// Ball
+int g_ball_x;
+int g_ball_y;
 
+int g_ball_prev_x;
+int g_ball_prev_y;
+
+int g_ball_dir_x;
+int g_ball_dir_y;
+
+// Active player index
 int g_player_index = 0;
+
+// Score
+int g_game_score_pl_1 = 0;
+int g_game_score_pl_2 = 0;
+
+// Initializing our game state
+void init_game_state(int reset_score) {
+    g_player1_x = 1 + PLAYER_OFFSET_FROM_WALL;
+    g_player2_x = SCREEN_WIDTH - 2 - PLAYER_OFFSET_FROM_WALL;
+
+    g_player1_y = (SCREEN_HEIGHT / 2) - (PLAYER_HEIGHT / 2);
+    g_player2_y = (SCREEN_HEIGHT / 2) - (PLAYER_HEIGHT / 2);
+
+    g_ball_x = SCREEN_WIDTH / 2;
+    g_ball_y = SCREEN_HEIGHT / 2;
+
+    g_ball_prev_x = g_ball_x;
+    g_ball_prev_y = g_ball_y;
+
+    g_ball_dir_x = 0;
+    g_ball_dir_y = 0;
+
+    g_player_index = 0;
+
+    if (reset_score == 1) {
+        g_game_score_pl_1 = 0;
+        g_game_score_pl_2 = 0;
+    }
+}
 
 void move_cursor(int x, int y) { printf("\033[%d;%dH", y, x); }
 
@@ -53,32 +84,24 @@ int draw() {
     return 0;
 }
 
-void draw_ui(char border_draw_char) {
-    for (int y = 0; y < SCREEN_HEIGHT + BORDERS_OFFSET; ++y) {
-        for (int x = 0; x < SCREEN_WIDTH + BORDERS_OFFSET; ++x) {
-            // Draw the top edge
-            if (y == 0 && (x < SCREEN_WIDTH + BORDERS_OFFSET)) {
-                draw_rectangle(x, y, x + 1, y + 1, border_draw_char);
-            }
-            // Draw the left edge
-            if (x == 0 && (y < SCREEN_HEIGHT + BORDERS_OFFSET)) {
-                draw_rectangle(x, y, x + 1, y + 1, border_draw_char);
-            }
-            // Draw the bottom edge
-            if (y == SCREEN_HEIGHT + BORDERS_OFFSET - 1 && (x < SCREEN_WIDTH + BORDERS_OFFSET)) {
-                draw_rectangle(x, y, x + 1, y + 1, border_draw_char);
-            }
-            // Draw the right edge
-            if (x == SCREEN_WIDTH + BORDERS_OFFSET - 1 && (y < SCREEN_HEIGHT + BORDERS_OFFSET)) {
-                draw_rectangle(x, y, x + 1, y + 1, border_draw_char);
-            }
-        }
-    }
+void draw_text(int x, int y, const char* text) {
+    move_cursor(x, y);
+    printf("%s", text);
 }
 
-void update() {
-    g_ball_x += g_ball_dir_x;
-    g_ball_y += g_ball_dir_y;
+void draw_ui(char border_draw_char) {
+    for (int x = 0; x < SCREEN_WIDTH; ++x) {
+        draw_rectangle(x, 0, x + 1, 1, border_draw_char);
+        draw_rectangle(x, SCREEN_HEIGHT - 1, x + 1, SCREEN_HEIGHT, border_draw_char);
+    }
+    for (int y = 1; y < SCREEN_HEIGHT - 1; ++y) {
+        draw_rectangle(0, y, 1, y + 1, border_draw_char);
+        draw_rectangle(SCREEN_WIDTH - 1, y, SCREEN_WIDTH, y + 1, border_draw_char);
+    }
+
+    draw_text((SCREEN_WIDTH / 2) - (BORDERS_OFFSET / 2), 1, "PONG");
+    draw_text(2, 2, "P1: 0");
+    draw_text(SCREEN_WIDTH - 4, 2, "P2: 0");
 }
 
 int capture_input() {
@@ -152,21 +175,27 @@ int capture_input() {
     return 0;
 }
 
+void update() {
+    g_ball_x += g_ball_dir_x;
+    g_ball_y += g_ball_dir_y;
+}
+
 int main(void) {
-    g_player1_y = (int)floor(SCREEN_HEIGHT / 2);
-    g_player2_y = (int)floor(SCREEN_HEIGHT / 2);
     // Main game loop
     // [TODO]: remove later or make conditional
     int FPS = (1000 / 60) * 1000;
     while (1) {
+        init_game_state(1);
         while (1) {
             printf("\e[1;1H\e[2J");
+
             draw();
             draw_ui('*');
             if (capture_input()) {
             };
 
             update();
+
             // [TODO]: remove later or make conditional
             usleep(FPS);
         }
