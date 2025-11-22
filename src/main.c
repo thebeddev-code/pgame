@@ -130,29 +130,43 @@ void handle_collision() {
     // Checking collision with the player
     if (g_ball_x != g_ball_prev_x || g_ball_y != g_ball_prev_y) {
         // Player 1 (left paddle)
-        if (g_ball_x - 1 == g_player1_x && g_ball_y >= g_player1_y &&
+        if (g_ball_x - 1 <= g_player1_x && g_ball_y >= g_player1_y &&
             g_ball_y < g_player1_y + PLAYER_HEIGHT) {
             g_ball_dir_x = 1;  // Move right
             g_ball_dir_y = g_ball_y == g_player1_y ? -1 : g_player1_y + PLAYER_HEIGHT - 1 ? 1 : 0;
             // Setting the prev position to avoid collision check
             g_ball_prev_x = g_ball_x;
             g_ball_prev_y = g_ball_y;
-            game_pause();
+            // game_pause();
         }
 
         // Player 2 (right paddle)
-        if (g_ball_x + 1 == g_player2_x && g_ball_y >= g_player2_y &&
+        if (g_ball_x + 1 >= g_player2_x && g_ball_y >= g_player2_y &&
             g_ball_y < g_player2_y + PLAYER_HEIGHT) {
             g_ball_dir_x = -1;  // Move left
             g_ball_dir_y = g_ball_y == g_player2_y ? -1 : g_player2_y + PLAYER_HEIGHT - 1 ? 1 : 0;
             // Setting the prev position to avoid collision check
             g_ball_prev_x = g_ball_x;
             g_ball_prev_y = g_ball_y;
-            game_pause();
+            // game_pause();
         }
     }
     // Checking collision with the wall
-    if (g_ball_y - 1 <= 0) {
+    if (g_ball_y - 1 <= BORDERS_OFFSET) {
+        g_ball_dir_y = 1;
+    }
+    if (g_ball_y + 1 >= SCREEN_HEIGHT - BORDERS_OFFSET) {
+        g_ball_dir_y = -1;
+    }
+    // Checking if hits the left or right borders
+    // If so increase, the ball sender's score
+    if (g_ball_x - 1 <= BORDERS_OFFSET) {
+        g_game_score_pl_2 += 1;
+        game_pause();
+    }
+    if (g_ball_x + 1 >= SCREEN_WIDTH - BORDERS_OFFSET) {
+        g_game_score_pl_1 += 1;
+        game_pause();
     }
 }
 
