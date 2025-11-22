@@ -114,6 +114,8 @@ void draw_ui(char border_draw_char) {
     printf("P2: %d", g_game_score_pl_2);
 }
 
+void detect_collision() {}
+
 int capture_input() {
     int done = 0;
     char prevKey = 0;
@@ -128,14 +130,14 @@ int capture_input() {
                 case 'a':  // move up
                     if (g_player1_y > 0) {
                         g_player1_y -= 1;
+                        prevKey = 'a';
                     }
-                    prevKey = 'a';
                     break;
                 case 'z':  // move down
                     if (g_player1_y + 1 < SCREEN_HEIGHT) {
                         g_player1_y += 1;
+                        prevKey = 'z';
                     }
-                    prevKey = 'z';
                     break;
                 case '\n':
                     // End turn ONLY if last key was a move key (from a specific player)
@@ -158,14 +160,14 @@ int capture_input() {
                 case 'k':  // move up
                     if (g_player2_y > 0) {
                         g_player2_y -= 1;
+                        prevKey = 'k';
                     }
-                    prevKey = 'k';
                     break;
                 case 'm':  // move down
                     if (g_player2_y + 1 < SCREEN_HEIGHT) {
                         g_player2_y += 1;
+                        prevKey = 'm';
                     }
-                    prevKey = 'm';
                     break;
                 case '\n':
                     if (prevKey == 'k' || prevKey == 'm') {
@@ -196,15 +198,22 @@ int main(void) {
     int FPS = (1000 / 60) * 1000;
     while (1) {
         init_game_state(1);
+        int turns_taken = 0;
         while (1) {
             printf("\e[1;1H\e[2J");
 
             draw();
             draw_ui('*');
-            if (capture_input()) {
-            };
+            // flushing output, so that instead of being stored in the buffer it would be ouputted to the
+            // screen
+            fflush(stdout);
+            // By default it seems that getchar causes stdout to fflush
+            if (turns_taken < 2) {
+                capture_input();
+                turns_taken += 1;
+            }
 
-            update();
+            // update();
 
             // [TODO]: remove later or make conditional
             usleep(FPS);
