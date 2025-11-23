@@ -13,7 +13,7 @@ static const int PLAYER_HEIGHT = 3;
 // BALL
 static const char BALL_DRAW_CHAR = '@';
 // OTHER
-static const int MAX_SCORE = 21;
+static const int MAX_SCORE = 12;
 static const int GOAL_OFFSET_FROM_BORDER = 5;
 
 // [---] Declaring our game state
@@ -31,8 +31,8 @@ int g_ball_y;
 int g_ball_prev_x;
 int g_ball_prev_y;
 
-int g_ball_dir_x;
-int g_ball_dir_y;
+int g_ball_dx;
+int g_ball_dy;
 
 int g_ball_target_player;
 
@@ -63,8 +63,8 @@ void init_game_state(int reset_score) {
     g_ball_prev_x = g_ball_x;
     g_ball_prev_y = g_ball_y;
     // Ball dir
-    g_ball_dir_x = -1;
-    g_ball_dir_y = 0;
+    g_ball_dx = -1;
+    g_ball_dy = 0;
 
     g_ball_target_player = 1;
 
@@ -127,14 +127,14 @@ void draw_ui() {
     printf("%s", "...:::P O N G:::..");
     // We can't use arrays and thus sprintf
     move_cursor(2 + text_offset, 2);
-    if (g_ball_dir_x == -1) {
+    if (g_ball_dx == -1) {
         printf("[*] P1: %d", g_game_score_pl_1);  // Active Player 1
     } else {
         printf("[ ] P1: %d", g_game_score_pl_1);  // Inactive Player 1
     }
 
     move_cursor(SCREEN_WIDTH - 8 - BORDERS_OFFSET - text_offset, 2);
-    if (g_ball_dir_x == 1) {
+    if (g_ball_dx == 1) {
         printf("[*] P2: %d", g_game_score_pl_2);
     } else {
         printf("[ ] P2: %d", g_game_score_pl_2);
@@ -191,8 +191,8 @@ void handle_input() {
 
 void handle_ball_motion(int player_index) {
     if (player_index == 0) {
-        g_ball_dir_x = 1;
-        g_ball_dir_y = g_ball_y == g_player1_y ? -1 : g_ball_y == g_player1_y + PLAYER_HEIGHT - 1 ? 1 : 0;
+        g_ball_dx = 1;
+        g_ball_dy = g_ball_y == g_player1_y ? -1 : g_ball_y == g_player1_y + PLAYER_HEIGHT - 1 ? 1 : 0;
         // Setting the prev position to avoid collision check
         g_ball_prev_x = g_ball_x;
         g_ball_prev_y = g_ball_y;
@@ -203,8 +203,8 @@ void handle_ball_motion(int player_index) {
     }
 
     if (player_index == 1) {
-        g_ball_dir_x = -1;  // Move left
-        g_ball_dir_y = g_ball_y == g_player2_y ? -1 : g_ball_y == g_player2_y + PLAYER_HEIGHT - 1 ? 1 : 0;
+        g_ball_dx = -1;  // Move left
+        g_ball_dy = g_ball_y == g_player2_y ? -1 : g_ball_y == g_player2_y + PLAYER_HEIGHT - 1 ? 1 : 0;
         // Setting the prev position to avoid collision check
         g_ball_prev_x = g_ball_x;
         g_ball_prev_y = g_ball_y;
@@ -226,7 +226,7 @@ void handle_collision() {
         }
         // EDGE CASES 45 DEG
         // only check for diagonal motion
-        if (g_ball_dir_y > 0) {
+        if (g_ball_dy > 0) {
             // PLAYER 1 EDGE CASES
             if (is_colliding_x_pl_1 && g_ball_y + 1 == g_player1_y) {
                 //  Repositioning the ball to be on the paddle
@@ -249,7 +249,7 @@ void handle_collision() {
             // only check for diagonal motion
         }
         // EDGE CASES 45 DEG
-        if (g_ball_dir_y > 0) {
+        if (g_ball_dy > 0) {
             if (is_colliding_x_pl_2 && g_ball_y + 1 == g_player2_y) {
                 g_ball_y = g_player2_y;
                 handle_ball_motion(1);
@@ -264,10 +264,10 @@ void handle_collision() {
     // Checking collision with the top/bottom borders
     // If so reflect ball's y dir
     if (g_ball_y - 1 <= BORDERS_OFFSET) {
-        g_ball_dir_y = 1;
+        g_ball_dy = 1;
     }
     if (g_ball_y + 1 >= SCREEN_HEIGHT - BORDERS_OFFSET) {
-        g_ball_dir_y = -1;
+        g_ball_dy = -1;
     }
     // Checking if hits the left/right borders
     // If so increase, the ball sender's score
@@ -283,8 +283,8 @@ void handle_collision() {
 // --- UPDATE ---
 
 void update() {
-    g_ball_x += g_ball_dir_x;
-    g_ball_y += g_ball_dir_y;
+    g_ball_x += g_ball_dx;
+    g_ball_y += g_ball_dy;
 }
 
 void draw_end_game_screen();
