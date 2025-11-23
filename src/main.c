@@ -15,7 +15,6 @@ static const char BALL_DRAW_CHAR = '@';
 // OTHER
 static const int MAX_SCORE = 21;
 static const int GOAL_OFFSET_FROM_BORDER = 5;
-static const int CURSOR_OFFSET_Y = 1;
 
 // [---] Declaring our game state
 // Player
@@ -302,8 +301,6 @@ int main(void) {
     keypad(stdscr, TRUE);
     curs_set(0);
     // Main game loop
-    // [TODO]: remove later or make conditional
-    int FPS = (1000 / 30) * 1000;
     while (1) {
         init_game_state(1);
         int prev_game_score_pl_1 = g_game_score_pl_1;
@@ -333,7 +330,7 @@ int main(void) {
                 prev_game_score_pl_1 = g_game_score_pl_1;
                 prev_game_score_pl_2 = g_game_score_pl_2;
             }
-            // [TODO]: remove later or make conditional
+
             napms(25);
         }
         draw_end_game_screen();
@@ -342,6 +339,7 @@ int main(void) {
         };
     }
     show_final_message();
+    curs_set(1);
     return 0;
 }
 
