@@ -366,8 +366,6 @@ void draw_end_game_screen() {
         printf("Player 1 Wins!");
     } else if (g_game_score_pl_2 > g_game_score_pl_1) {
         printf("Player 2 Wins!");
-    } else {
-        printf("It's a Tie!");
     }
 
     // Prompt to exit
